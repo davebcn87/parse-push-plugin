@@ -12,6 +12,8 @@ import github.taivo.parsepushplugin.ParsePushConfigReader;
 import github.taivo.parsepushplugin.ParsePushConfigException;
 
 import android.util.Log;
+import android.content.Context;
+import java.io.File;
 
 /*
    Why is this Application subclass needed?
@@ -68,6 +70,8 @@ public class ParsePushApplication extends Application {
             Log.d(LOGTAG, "NOTE: The trailing slash is important, e.g., https://mydomain.com:1337/parse/");
             Log.d(LOGTAG, "NOTE: Set the clientKey if your server requires it, otherwise it can be null");
             //
+            deleteInstallationCache(this);
+
             // initialize for use with opensource parse-server
             Parse.initialize(new Parse.Configuration.Builder(this)
                .applicationId(config.getAppId())
@@ -75,6 +79,7 @@ public class ParsePushApplication extends Application {
                .clientKey(config.getClientKey())
                .build()
             );
+
          }
 
          Log.d(LOGTAG, "Saving Installation in background");
@@ -95,4 +100,18 @@ public class ParsePushApplication extends Application {
          Log.e(LOGTAG, ex.toString());
       }
    }
+
+   private void deleteInstallationCache(Context context) {
+        boolean deletedParseFolder = false;
+        File cacheDir = context.getCacheDir();
+        File parseApp = new File(cacheDir.getParent(),"app_Parse");
+        File installationId = new File(parseApp,"installationId");
+        File currentInstallation = new File(parseApp,"currentInstallation");
+        if(installationId.exists()) {
+            deletedParseFolder = deletedParseFolder || installationId.delete();
+        }
+        if(currentInstallation.exists()) {
+         deletedParseFolder = deletedParseFolder && currentInstallation.delete();
+        }
+    }
 }
